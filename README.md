@@ -1,5 +1,5 @@
 # `impl-opaque`
-[Documentation](https://docs.rs/retained/latest)
+[Documentation](https://docs.rs/impl-opaque/latest)
 
 Declare complex opaque struct using impl block
 

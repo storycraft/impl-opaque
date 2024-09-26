@@ -7,7 +7,7 @@ use expand::FieldExpander;
 use gen::Gen;
 use proc_macro::TokenStream;
 use proc_macro2::Span;
-use quote::{quote_spanned, ToTokens};
+use quote::quote_spanned;
 use syn::{parse_macro_input, ImplItem, ImplItemFn, ItemImpl};
 
 #[proc_macro_attribute]
@@ -25,10 +25,7 @@ pub fn opaque(attr: TokenStream, item: TokenStream) -> TokenStream {
     let gen = Gen {
         attrs: block.attrs.drain(..).collect(),
         vis: attr.vis,
-        name: {
-            let ty: TokenStream = block.self_ty.to_token_stream().into();
-            parse_macro_input!(ty)
-        },
+        ty: *block.self_ty.clone(),
         generics: block.generics.clone(),
         fields: expander.fields,
         constructor: attr.constructor,

@@ -1,13 +1,13 @@
 use proc_macro2::Span;
 use quote::{quote_spanned, ToTokens, TokenStreamExt};
-use syn::{Attribute, Generics, Ident, Type, Visibility};
+use syn::{Attribute, Generics, Type, Visibility};
 
 use crate::{attr::Constructor, expand::Field};
 
 pub struct Gen {
     pub attrs: Vec<Attribute>,
     pub vis: Visibility,
-    pub name: Ident,
+    pub ty: Type,
     pub generics: Generics,
     pub fields: Vec<Field>,
     pub constructor: Constructor,
@@ -18,13 +18,13 @@ impl ToTokens for Gen {
         let Self {
             attrs,
             vis,
-            name,
+            ty,
             generics,
             fields,
             constructor,
         } = self;
 
-        let (impl_gen, gen, where_gen) = generics.split_for_impl();
+        let (impl_gen, _, where_gen) = generics.split_for_impl();
 
         let field_decl_iter = fields.iter().map(FieldDecl::from);
         let field_init_iter = fields.iter().map(|field| &field.init);
@@ -32,19 +32,19 @@ impl ToTokens for Gen {
         tokens.append_all(quote_spanned!(Span::mixed_site() =>
             #(#attrs)*
             #[non_exhaustive]
-            #vis struct #name #gen (
+            #vis struct #ty (
                 #(#field_decl_iter,)*
                 ::impl_opaque::__private::Opaque,
             ) #where_gen;
 
             const _: () = {
-                impl #impl_gen ::core::fmt::Debug for #name #gen #where_gen {
+                impl #impl_gen ::core::fmt::Debug for #ty #where_gen {
                     fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-                        f.debug_struct(::core::stringify!(#name)).finish_non_exhaustive()
+                        f.debug_struct(::core::stringify!(#ty)).finish_non_exhaustive()
                     }
                 }
 
-                impl #impl_gen #name #gen #where_gen {
+                impl #impl_gen #ty #where_gen {
                     pub fn new(#constructor) -> Self {
                         Self(#(#field_init_iter,)* ::impl_opaque::__private::Opaque)
                     }

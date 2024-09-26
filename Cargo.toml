@@ -13,5 +13,5 @@ repository = "https://github.com/storycraft/impl-opaque"
 keywords = ["macro", "boilerplate"]
 
 [workspace.dependencies]
-impl-opaque = { path = "./lib" }
-impl-opaque-macro = { path = "./macro" }
+impl-opaque = { version = "0.1.0", path = "./lib" }
+impl-opaque-macro = { version = "0.1.0", path = "./macro" }

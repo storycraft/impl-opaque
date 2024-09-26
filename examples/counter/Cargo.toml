@@ -1,5 +1,5 @@
 [package]
-name = "hello-world"
+name = "counter"
 edition.workspace = true
 authors.workspace = true
 license.workspace = true

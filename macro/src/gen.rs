@@ -56,7 +56,7 @@ impl ToTokens for Gen {
                     }
                 }
 
-                impl ::core::default::Default for #ty where for<'a> *const &'a #ty: Send {
+                impl ::core::default::Default for #ty where for<'a> *const &'a #ty: ::core::marker::Send {
                     fn default() -> Self {
                         ::core::unreachable!()
                     }

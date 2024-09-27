@@ -5,7 +5,7 @@ resolver = "2"
 
 [workspace.package]
 description = "Macro for declaring complex struct and initializer"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 authors = ["storycraft <storycraft@pancake.sh>"]
 license = "MIT OR Apache-2.0"
@@ -13,5 +13,5 @@ repository = "https://github.com/storycraft/impl-opaque"
 keywords = ["macro", "boilerplate"]
 
 [workspace.dependencies]
-impl-opaque = { version = "0.2.0", path = "./lib" }
-impl-opaque-macro = { version = "0.2.0", path = "./macro" }
+impl-opaque = { version = "0.3.0", path = "./lib" }
+impl-opaque-macro = { version = "0.3.0", path = "./macro" }

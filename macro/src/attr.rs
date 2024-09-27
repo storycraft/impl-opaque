@@ -12,7 +12,7 @@ use syn::{
 pub struct Attr {
     pub vis: Visibility,
     pub constness: Option<Token![const]>,
-    pub constructor: Constructor,
+    pub new_args: NewArgs,
 }
 
 impl Parse for Attr {
@@ -34,46 +34,46 @@ impl Parse for Attr {
 
         let constructor = Parse::parse(input)?;
 
-        Ok(Self { vis, constness, constructor })
+        Ok(Self { vis, constness, new_args: constructor })
     }
 }
 
 #[repr(transparent)]
-pub struct Constructor(Punctuated<ConstructorArgs, Comma>);
+pub struct NewArgs(Punctuated<Argument, Comma>);
 
-impl Parse for Constructor {
+impl Parse for NewArgs {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self(Punctuated::parse_terminated(input)?))
     }
 }
 
-impl Deref for Constructor {
-    type Target = Punctuated<ConstructorArgs, Comma>;
+impl Deref for NewArgs {
+    type Target = Punctuated<Argument, Comma>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
-impl DerefMut for Constructor {
+impl DerefMut for NewArgs {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
 }
 
-impl ToTokens for Constructor {
+impl ToTokens for NewArgs {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         (**self).to_tokens(tokens)
     }
 }
 
-pub struct ConstructorArgs {
+pub struct Argument {
     pub vis: Option<Visibility>,
     pub pat: PatIdent,
     pub ty: Type,
 }
 
-impl Parse for ConstructorArgs {
+impl Parse for Argument {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let vis = if input.peek(Token![pub]) {
             Some(Parse::parse(input)?)
@@ -94,7 +94,7 @@ impl Parse for ConstructorArgs {
     }
 }
 
-impl ToTokens for ConstructorArgs {
+impl ToTokens for Argument {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         self.pat.to_tokens(tokens);
 

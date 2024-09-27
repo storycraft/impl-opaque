@@ -2,7 +2,7 @@ use quote::{quote_spanned, ToTokens, TokenStreamExt};
 use syn::{spanned::Spanned, Attribute, Expr, Generics, Ident, Type, Visibility};
 
 use crate::{
-    attr::{Attr, ConstructorArgs},
+    attr::{Attr, Argument},
     expand::Field,
 };
 
@@ -22,7 +22,7 @@ impl ToTokens for Gen {
                 Attr {
                     vis,
                     constness,
-                    constructor,
+                    new_args: constructor,
                 },
             ty,
             generics,
@@ -116,8 +116,8 @@ impl<'a> From<&'a Field> for FieldDecl<'a> {
     }
 }
 
-impl<'a> From<&'a ConstructorArgs> for FieldDecl<'a> {
-    fn from(field: &'a ConstructorArgs) -> Self {
+impl<'a> From<&'a Argument> for FieldDecl<'a> {
+    fn from(field: &'a Argument) -> Self {
         Self {
             attrs: &[],
             vis: field.vis.as_ref().unwrap_or(&Visibility::Inherited),

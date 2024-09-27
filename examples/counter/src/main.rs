@@ -1,7 +1,7 @@
 use impl_opaque::opaque;
 
 // use constructor arg as field
-#[opaque(as pub, pub(self) counter: i32)]
+#[opaque(as pub const, pub(self) counter: i32)]
 impl Iterator for Counter {
     type Item = i32;
 

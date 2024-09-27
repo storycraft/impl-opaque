@@ -308,14 +308,14 @@ dependencies = [
 
 [[package]]
 name = "impl-opaque"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "impl-opaque-macro",
 ]
 
 [[package]]
 name = "impl-opaque-macro"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "proc-macro2",
  "quote",

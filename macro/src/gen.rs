@@ -38,7 +38,7 @@ impl ToTokens for Gen {
         let constructor_init_iter = constructor
             .iter()
             .filter(|arg| arg.vis.is_some())
-            .map(|arg| &arg.name);
+            .map(|arg| &arg.pat.ident);
         let field_init_iter = fields.iter().map(FieldInit::from);
 
         tokens.append_all(quote_spanned!(Span::mixed_site() =>
@@ -65,8 +65,8 @@ impl ToTokens for Gen {
                 impl #impl_gen #ty #where_gen {
                     pub fn new(#constructor) -> Self {
                         Self {
-                            #(#constructor_init_iter,)*
                             #(#field_init_iter,)*
+                            #(#constructor_init_iter,)*
                         }
                     }
                 }
@@ -119,7 +119,7 @@ impl<'a> From<&'a ConstructorArgs> for FieldDecl<'a> {
         Self {
             attrs: &[],
             vis: field.vis.as_ref().unwrap_or(&Visibility::Inherited),
-            name: &field.name,
+            name: &field.pat.ident,
             ty: &field.ty,
         }
     }

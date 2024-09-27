@@ -6,7 +6,7 @@ use syn::{
     punctuated::Punctuated,
     spanned::Spanned,
     token::Comma,
-    Ident, Token, Type, Visibility,
+    Pat, PatIdent, Token, Type, Visibility,
 };
 
 pub struct Attr {
@@ -16,8 +16,10 @@ pub struct Attr {
 
 impl Parse for Attr {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        let vis = if input.peek(Token![pub]) {
-            let vis = Visibility::parse(input)?;
+        let vis = if input.peek(Token![as]) {
+            let _ = input.parse::<Token![as]>()?;
+
+            let vis = Parse::parse(input)?;
 
             if !input.is_empty() {
                 input.parse::<Token![,]>()?;
@@ -28,7 +30,7 @@ impl Parse for Attr {
             Visibility::Inherited
         };
 
-        let constructor = Constructor::parse(input)?;
+        let constructor = Parse::parse(input)?;
 
         Ok(Self { vis, constructor })
     }
@@ -65,30 +67,37 @@ impl ToTokens for Constructor {
 
 pub struct ConstructorArgs {
     pub vis: Option<Visibility>,
-    pub name: Ident,
+    pub pat: PatIdent,
     pub ty: Type,
 }
 
 impl Parse for ConstructorArgs {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let vis = if input.peek(Token![pub]) {
-            Some(Visibility::parse(input)?)
+            Some(Parse::parse(input)?)
         } else {
             None
         };
 
-        let name = Ident::parse(input)?;
-        input.parse::<Token![:]>()?;
-        let ty = Type::parse(input)?;
+        let pat = match Pat::parse_single(input) {
+            Ok(Pat::Ident(ident)) => ident,
+            Ok(_) => return Err(syn::Error::new(input.span(), "expected ident pattern")),
+            Err(err) => return Err(err),
+        };
 
-        Ok(Self { vis, name, ty })
+        input.parse::<Token![:]>()?;
+        let ty = Parse::parse(input)?;
+
+        Ok(Self { vis, pat, ty })
     }
 }
 
 impl ToTokens for ConstructorArgs {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
-        self.name.to_tokens(tokens);
+        self.pat.to_tokens(tokens);
+
         Token![:](tokens.span()).to_tokens(tokens);
-        self.ty.to_tokens(tokens)
+
+        self.ty.to_tokens(tokens);
     }
 }

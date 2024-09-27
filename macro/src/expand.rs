@@ -2,7 +2,7 @@ use proc_macro2::Span;
 use quote::{format_ident, quote, quote_spanned};
 use syn::{
     visit::Visit, visit_mut::VisitMut, Attribute, Block, Expr, Ident, Local, LocalInit, PatType,
-    Stmt, Token, Type,
+    Token, Type,
 };
 
 pub struct Field {
@@ -29,9 +29,7 @@ impl FieldExpander {
 struct Expander<'a>(&'a mut Vec<Field>);
 
 impl VisitMut for Expander<'_> {
-    fn visit_stmt_mut(&mut self, i: &mut Stmt) {
-        let Stmt::Local(local) = i else { return };
-
+    fn visit_local_mut(&mut self, local: &mut syn::Local) {
         let Some(field_pos) = local
             .attrs
             .iter()
@@ -41,10 +39,13 @@ impl VisitMut for Expander<'_> {
         };
 
         let Some(ty) = LocalVisitor::find(local) else {
-            *i = Stmt::Expr(
-                Expr::Verbatim(quote!(::core::compile_error!("Field must have type"))),
-                Some(Default::default()),
-            );
+            local.init = Some(LocalInit {
+                eq_token: Token![=](Span::mixed_site()),
+                expr: Box::new(Expr::Verbatim(quote!(::core::compile_error!(
+                    "Field must have type"
+                )))),
+                diverge: None,
+            });
 
             return;
         };

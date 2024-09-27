@@ -12,7 +12,7 @@ trait Trait {
 }
 
 // Using trait impl block
-#[opaque(pub /* optional struct vis */ , msg: &str /* constructor */ )]
+#[opaque(as pub /* optional struct vis */ , msg: &str /* constructor */ )]
 impl Trait for TraitImpl {
     fn run(&self) {
         #[field]

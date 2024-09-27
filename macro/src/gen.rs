@@ -31,6 +31,7 @@ impl ToTokens for Gen {
 
         tokens.append_all(quote_spanned!(Span::mixed_site() =>
             #(#attrs)*
+            #[repr(Rust)]
             #[non_exhaustive]
             #vis struct #ty (
                 #(#field_decl_iter,)*

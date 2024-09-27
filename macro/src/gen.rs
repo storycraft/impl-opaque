@@ -92,7 +92,7 @@ impl<'a> From<&'a Field> for FieldInit<'a> {
 impl ToTokens for FieldInit<'_> {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         let Self { name, init } = self;
-        tokens.append_all(quote_spanned!(Span::mixed_site() => #name : #init));
+        tokens.append_all(quote_spanned!(name.span() => #name : #init));
     }
 }
 
@@ -133,6 +133,6 @@ impl ToTokens for FieldDecl<'_> {
             name,
             ty,
         } = self;
-        tokens.append_all(quote_spanned!(Span::mixed_site() => #(#attrs)* #vis #name : #ty));
+        tokens.append_all(quote_spanned!(name.span() => #(#attrs)* #vis #name : #ty));
     }
 }

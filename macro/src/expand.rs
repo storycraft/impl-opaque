@@ -1,8 +1,7 @@
-use proc_macro2::Span;
 use quote::{format_ident, quote, quote_spanned};
 use syn::{
-    visit::Visit, visit_mut::VisitMut, Attribute, Block, Expr, Ident, Local, LocalInit, PatType,
-    Token, Type,
+    spanned::Spanned, visit::Visit, visit_mut::VisitMut, Attribute, Block, Expr, Ident, Local,
+    LocalInit, PatType, Token, Type,
 };
 
 pub struct Field {
@@ -40,7 +39,7 @@ impl VisitMut for Expander<'_> {
 
         let Some(ty) = LocalVisitor::find(local) else {
             local.init = Some(LocalInit {
-                eq_token: Token![=](Span::mixed_site()),
+                eq_token: Token![=](local.span()),
                 expr: Box::new(Expr::Verbatim(quote!(::core::compile_error!(
                     "Field must have type"
                 )))),
@@ -54,21 +53,23 @@ impl VisitMut for Expander<'_> {
 
         let init: Expr = {
             let replaced = LocalInit {
-                eq_token: Token![=](Span::mixed_site()),
+                eq_token: Token![=](local.span()),
                 expr: Box::new(Expr::Verbatim({
-                    quote_spanned!(Span::call_site() => self.#index)
+                    quote_spanned!(local.span() => self.#index)
                 })),
                 diverge: None,
             };
 
             match local.init.replace(replaced) {
                 None => Expr::Verbatim(
-                    quote! { ::core::compile_error!("Field does not have a initializer") },
+                    quote_spanned!(local.span() => ::core::compile_error!("Field does not have a initializer")),
                 ),
 
                 Some(LocalInit {
                     diverge: Some(_), ..
-                }) => Expr::Verbatim(quote! { ::core::compile_error!("Field cannot diverge") }),
+                }) => Expr::Verbatim(
+                    quote_spanned!(local.span() => ::core::compile_error!("Field cannot diverge")),
+                ),
 
                 Some(LocalInit { expr, .. }) => *expr,
             }

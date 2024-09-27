@@ -1,16 +1,14 @@
 use impl_opaque::opaque;
 
-#[opaque(pub, initial: i32)]
+// use constructor arg as field
+#[opaque(pub, pub(self) counter: i32)]
 impl Iterator for Counter {
     type Item = i32;
 
     fn next(&mut self) -> Option<Self::Item> {
-        #[field]
-        let ref mut counter: i32 = initial;
-        let cur = *counter;
-        *counter += 1;
+        self.counter += 1;
 
-        Some(cur)
+        Some(self.counter)
     }
 }
 

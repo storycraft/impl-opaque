@@ -1,9 +1,12 @@
+use std::ops::{Deref, DerefMut};
+
 use quote::ToTokens;
 use syn::{
     parse::{Parse, ParseStream},
     punctuated::Punctuated,
+    spanned::Spanned,
     token::Comma,
-    PatType, Token, Visibility,
+    Ident, Token, Type, Visibility,
 };
 
 pub struct Attr {
@@ -32,7 +35,7 @@ impl Parse for Attr {
 }
 
 #[repr(transparent)]
-pub struct Constructor(Punctuated<PatType, Comma>);
+pub struct Constructor(Punctuated<ConstructorArgs, Comma>);
 
 impl Parse for Constructor {
     fn parse(input: ParseStream) -> syn::Result<Self> {
@@ -40,8 +43,52 @@ impl Parse for Constructor {
     }
 }
 
+impl Deref for Constructor {
+    type Target = Punctuated<ConstructorArgs, Comma>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for Constructor {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
 impl ToTokens for Constructor {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
-        self.0.to_tokens(tokens)
+        (**self).to_tokens(tokens)
+    }
+}
+
+pub struct ConstructorArgs {
+    pub vis: Option<Visibility>,
+    pub name: Ident,
+    pub ty: Type,
+}
+
+impl Parse for ConstructorArgs {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        let vis = if input.peek(Token![pub]) {
+            Some(Visibility::parse(input)?)
+        } else {
+            None
+        };
+
+        let name = Ident::parse(input)?;
+        input.parse::<Token![:]>()?;
+        let ty = Type::parse(input)?;
+
+        Ok(Self { vis, name, ty })
+    }
+}
+
+impl ToTokens for ConstructorArgs {
+    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
+        self.name.to_tokens(tokens);
+        Token![:](tokens.span()).to_tokens(tokens);
+        self.ty.to_tokens(tokens)
     }
 }

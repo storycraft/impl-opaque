@@ -11,28 +11,30 @@ use syn::{
 
 pub struct Attr {
     pub vis: Visibility,
+    pub constness: Option<Token![const]>,
     pub constructor: Constructor,
 }
 
 impl Parse for Attr {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        let vis = if input.peek(Token![as]) {
+        let (vis, constness) = if input.peek(Token![as]) {
             let _ = input.parse::<Token![as]>()?;
 
             let vis = Parse::parse(input)?;
+            let constness = Parse::parse(input)?;
 
             if !input.is_empty() {
                 input.parse::<Token![,]>()?;
             }
 
-            vis
+            (vis, constness)
         } else {
-            Visibility::Inherited
+            (Visibility::Inherited, None)
         };
 
         let constructor = Parse::parse(input)?;
 
-        Ok(Self { vis, constructor })
+        Ok(Self { vis, constness, constructor })
     }
 }
 

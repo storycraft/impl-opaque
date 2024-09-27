@@ -2,27 +2,30 @@ use quote::{quote_spanned, ToTokens, TokenStreamExt};
 use syn::{spanned::Spanned, Attribute, Expr, Generics, Ident, Type, Visibility};
 
 use crate::{
-    attr::{Constructor, ConstructorArgs},
+    attr::{Attr, ConstructorArgs},
     expand::Field,
 };
 
 pub struct Gen {
-    pub attrs: Vec<Attribute>,
-    pub vis: Visibility,
+    pub struct_attrs: Vec<Attribute>,
+    pub attr: Attr,
     pub ty: Type,
     pub generics: Generics,
-    pub constructor: Constructor,
     pub fields: Vec<Field>,
 }
 
 impl ToTokens for Gen {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         let Self {
-            attrs,
-            vis,
+            struct_attrs,
+            attr:
+                Attr {
+                    vis,
+                    constness,
+                    constructor,
+                },
             ty,
             generics,
-            constructor,
             fields,
         } = self;
 
@@ -41,7 +44,7 @@ impl ToTokens for Gen {
         let field_init_iter = fields.iter().map(FieldInit::from);
 
         tokens.append_all(quote_spanned!(ty.span() =>
-            #(#attrs)*
+            #(#struct_attrs)*
             #[repr(Rust)]
             #[non_exhaustive]
             #vis struct #ty {
@@ -62,7 +65,7 @@ impl ToTokens for Gen {
                 }
 
                 impl #impl_gen #ty #where_gen {
-                    pub fn new(#constructor) -> Self {
+                    pub #constness fn new(#constructor) -> Self {
                         Self {
                             #(#field_init_iter,)*
                             #(#constructor_init_iter,)*

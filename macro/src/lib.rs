@@ -22,12 +22,11 @@ pub fn opaque(attr: TokenStream, item: TokenStream) -> TokenStream {
     }
 
     let gen = Gen {
-        attrs: block.attrs.drain(..).collect(),
-        vis: attr.vis,
+        struct_attrs: block.attrs.drain(..).collect(),
+        attr,
         ty: *block.self_ty.clone(),
         generics: block.generics.clone(),
         fields: expander.fields,
-        constructor: attr.constructor,
     };
 
     TokenStream::from(quote!(

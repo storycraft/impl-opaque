@@ -1,4 +1,4 @@
-use quote::{format_ident, quote, quote_spanned};
+use quote::{format_ident, quote_spanned};
 use syn::{
     spanned::Spanned, visit::Visit, visit_mut::VisitMut, Attribute, Block, Expr, Ident, Local,
     LocalInit, PatType, Token, Type,
@@ -40,9 +40,9 @@ impl VisitMut for Expander<'_> {
         let Some(ty) = LocalVisitor::find(local) else {
             local.init = Some(LocalInit {
                 eq_token: Token![=](local.span()),
-                expr: Box::new(Expr::Verbatim(quote!(::core::compile_error!(
-                    "Field must have type"
-                )))),
+                expr: Box::new(Expr::Verbatim(quote_spanned!(local.span() =>
+                    ::core::compile_error!("Field must have a type")
+                ))),
                 diverge: None,
             });
 

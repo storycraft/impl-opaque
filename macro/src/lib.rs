@@ -6,8 +6,7 @@ use attr::Attr;
 use expand::FieldExpander;
 use gen::Gen;
 use proc_macro::TokenStream;
-use proc_macro2::Span;
-use quote::quote_spanned;
+use quote::quote;
 use syn::{parse_macro_input, ImplItem, ImplItemFn, ItemImpl};
 
 #[proc_macro_attribute]
@@ -31,7 +30,7 @@ pub fn opaque(attr: TokenStream, item: TokenStream) -> TokenStream {
         constructor: attr.constructor,
     };
 
-    TokenStream::from(quote_spanned!(Span::mixed_site() =>
+    TokenStream::from(quote!(
         #gen
         #block
     ))

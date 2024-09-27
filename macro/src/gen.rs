@@ -1,6 +1,5 @@
-use proc_macro2::Span;
 use quote::{quote_spanned, ToTokens, TokenStreamExt};
-use syn::{Attribute, Expr, Generics, Ident, Type, Visibility};
+use syn::{spanned::Spanned, Attribute, Expr, Generics, Ident, Type, Visibility};
 
 use crate::{
     attr::{Constructor, ConstructorArgs},
@@ -41,7 +40,7 @@ impl ToTokens for Gen {
             .map(|arg| &arg.pat.ident);
         let field_init_iter = fields.iter().map(FieldInit::from);
 
-        tokens.append_all(quote_spanned!(Span::mixed_site() =>
+        tokens.append_all(quote_spanned!(ty.span() =>
             #(#attrs)*
             #[repr(Rust)]
             #[non_exhaustive]

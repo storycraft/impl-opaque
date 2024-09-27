@@ -16,7 +16,7 @@ impl Parse for Attr {
         let vis = if input.peek(Token![pub]) {
             let vis = Visibility::parse(input)?;
 
-            if input.peek(Token![,]) {
+            if !input.is_empty() {
                 input.parse::<Token![,]>()?;
             }
 

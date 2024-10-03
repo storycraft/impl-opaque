@@ -9,7 +9,7 @@ use syn::{
 pub struct IndexIdent(pub Index);
 impl IndexIdent {
     pub fn ident(&self) -> Ident {
-        format_ident!("__{}", self.0)
+        format_ident!("__internal_do_not_use_or_you_will_be_fired_{}", self.0)
     }
 }
 

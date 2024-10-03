@@ -82,6 +82,7 @@ impl ToTokens for Gen {
             #[non_exhaustive]
             #vis struct #ty {
                 #(#field_decl_iter,)*
+                __internal_no_default_derive: ::impl_opaque::__private::Opaque,
             } #where_gen
 
             const _: () = {
@@ -91,17 +92,12 @@ impl ToTokens for Gen {
                     }
                 }
 
-                impl ::core::default::Default for #ty where for<'a> *const &'a #ty: ::core::marker::Send {
-                    fn default() -> Self {
-                        ::core::unreachable!()
-                    }
-                }
-
                 impl #impl_gen #ty #where_gen {
                     pub #constness fn new(#constructor) -> Self {
                         Self {
                             #(#field_init_iter,)*
                             #(#constructor_init_iter,)*
+                            __internal_no_default_derive: ::impl_opaque::__private::Opaque,
                         }
                     }
                 }

@@ -5,5 +5,6 @@ pub use impl_opaque_macro::opaque;
 
 #[doc(hidden)]
 pub mod __private {
+    #[derive(Clone, Copy)]
     pub struct Opaque;
 }

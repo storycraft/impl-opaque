@@ -1,33 +1,42 @@
+use std::mem;
+
 use quote::{format_ident, quote_spanned};
 use syn::{
-    spanned::Spanned, visit::Visit, visit_mut::VisitMut, Attribute, Block, Expr, Ident, Local,
-    LocalInit, PatType, Token, Type,
+    spanned::Spanned, visit::Visit, visit_mut::VisitMut, Attribute, Block, Expr, Ident, Index,
+    Local, LocalInit, PatType, Token, Type,
 };
+
+pub struct IndexIdent(pub Index);
+impl IndexIdent {
+    pub fn ident(&self) -> Ident {
+        format_ident!("__{}", self.0)
+    }
+}
 
 pub struct Field {
     pub attrs: Vec<Attribute>,
-    pub index: Ident,
+    pub idx: IndexIdent,
     pub ty: Type,
     pub init: Expr,
 }
 
-pub struct FieldExpander {
+pub struct FnFieldExpander {
     pub fields: Vec<Field>,
 }
 
-impl FieldExpander {
+impl FnFieldExpander {
     pub const fn new() -> Self {
         Self { fields: Vec::new() }
     }
 
     pub fn expand(&mut self, block: &mut Block) {
-        Expander(&mut self.fields).visit_block_mut(block);
+        Visitor(&mut self.fields).visit_block_mut(block);
     }
 }
 
-struct Expander<'a>(&'a mut Vec<Field>);
+struct Visitor<'a>(&'a mut Vec<Field>);
 
-impl VisitMut for Expander<'_> {
+impl VisitMut for Visitor<'_> {
     fn visit_local_mut(&mut self, local: &mut syn::Local) {
         let Some(field_pos) = local
             .attrs
@@ -49,35 +58,36 @@ impl VisitMut for Expander<'_> {
             return;
         };
 
-        let index = format_ident!("__{}", self.0.len());
+        let idx = IndexIdent(Index::from(self.0.len()));
 
-        let init: Expr = {
-            let replaced = LocalInit {
-                eq_token: Token![=](local.span()),
-                expr: Box::new(Expr::Verbatim({
-                    quote_spanned!(local.span() => self.#index)
-                })),
-                diverge: None,
-            };
+        let init = {
+            match local.init {
+                None => {
+                    local.init = Some(LocalInit {
+                        eq_token: Token![=](local.span()),
+                        expr: Box::new(Expr::Verbatim(
+                            quote_spanned!(local.span() => ::core::compile_error!("field does not have a initializer")),
+                        )),
+                        diverge: None,
+                    });
 
-            match local.init.replace(replaced) {
-                None => Expr::Verbatim(
-                    quote_spanned!(local.span() => ::core::compile_error!("Field does not have a initializer")),
-                ),
+                    return;
+                }
 
-                Some(LocalInit {
-                    diverge: Some(_), ..
-                }) => Expr::Verbatim(
-                    quote_spanned!(local.span() => ::core::compile_error!("Field cannot diverge")),
-                ),
-
-                Some(LocalInit { expr, .. }) => *expr,
+                Some(LocalInit { ref mut expr, .. }) => {
+                    let span = expr.span();
+                    let ident = idx.ident();
+                    *mem::replace(
+                        expr,
+                        Box::new(Expr::Verbatim(quote_spanned!(span => self.#ident))),
+                    )
+                }
             }
         };
 
         self.0.push(Field {
             attrs: local.attrs.drain(field_pos..).skip(1).collect(),
-            index,
+            idx,
             ty,
             init,
         });

@@ -1,17 +1,18 @@
 //! Ported from <https://github.com/not-fl3/egui-miniquad/blob/master/examples/demo.rs>
 
 use {
-    egui_miniquad::{self as egui_mq, EguiMq},
+    egui_miniquad::EguiMq,
     impl_opaque::opaque,
     miniquad::{self as mq, RenderingBackend},
 };
 
 #[opaque(
     as pub,
-    pub(self) egui_mq: egui_mq::EguiMq,
-    pub(self) mq_ctx: Box<dyn RenderingBackend>
+    pub(self) mut mq_ctx: Box<dyn RenderingBackend>,
 )]
 impl mq::EventHandler for Stage {
+    field!(egui_mq: EguiMq = EguiMq::new(&mut *mq_ctx));
+
     fn update(&mut self) {}
 
     fn draw(&mut self) {
@@ -26,6 +27,11 @@ impl mq::EventHandler for Stage {
 
             #[field]
             let ref mut show_egui_demo_windows: bool = true;
+
+            #[field]
+            let Some(ref mut a): Option<()> = Some(()) else {
+                return;
+            };
 
             if *show_egui_demo_windows {
                 #[field]
@@ -149,8 +155,8 @@ fn main() {
         ..Default::default()
     };
     mq::start(conf, || {
-        let mut backend = mq::window::new_rendering_backend();
+        let backend = mq::window::new_rendering_backend();
 
-        Box::new(Stage::new(EguiMq::new(&mut *backend), backend))
+        Box::new(Stage::new(backend))
     });
 }

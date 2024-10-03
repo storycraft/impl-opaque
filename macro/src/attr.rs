@@ -34,7 +34,11 @@ impl Parse for Attr {
 
         let constructor = Parse::parse(input)?;
 
-        Ok(Self { vis, constness, new_args: constructor })
+        Ok(Self {
+            vis,
+            constness,
+            new_args: constructor,
+        })
     }
 }
 

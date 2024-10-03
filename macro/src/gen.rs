@@ -1,10 +1,43 @@
-use quote::{quote_spanned, ToTokens, TokenStreamExt};
-use syn::{spanned::Spanned, Attribute, Expr, Generics, Ident, Type, Visibility};
+use quote::{quote, ToTokens, TokenStreamExt};
+use syn::{Attribute, Expr, Generics, Ident, Type, Visibility};
 
 use crate::{
-    attr::{Attr, Argument},
-    expand::Field,
+    attr::{Argument, Attr},
+    expand::{fn_field, impl_field},
 };
+
+pub struct Field {
+    pub attrs: Vec<Attribute>,
+    pub vis: Visibility,
+    pub name: Ident,
+    pub ty: Type,
+    pub init: Expr,
+}
+
+impl From<impl_field::Field> for Field {
+    fn from(value: impl_field::Field) -> Self {
+        Self {
+            attrs: value.attrs,
+            vis: value.vis,
+            name: value.name,
+            ty: value.ty,
+            init: value.init,
+        }
+    }
+}
+
+impl From<fn_field::Field> for Field {
+    fn from(value: fn_field::Field) -> Self {
+        let name = value.idx.ident();
+        Self {
+            attrs: value.attrs,
+            vis: Visibility::Inherited,
+            name,
+            ty: value.ty,
+            init: value.init,
+        }
+    }
+}
 
 pub struct Gen {
     pub struct_attrs: Vec<Attribute>,
@@ -43,7 +76,7 @@ impl ToTokens for Gen {
             .map(|arg| &arg.pat.ident);
         let field_init_iter = fields.iter().map(FieldInit::from);
 
-        tokens.append_all(quote_spanned!(ty.span() =>
+        tokens.append_all(quote!(
             #(#struct_attrs)*
             #[repr(Rust)]
             #[non_exhaustive]
@@ -85,7 +118,7 @@ struct FieldInit<'a> {
 impl<'a> From<&'a Field> for FieldInit<'a> {
     fn from(field: &'a Field) -> Self {
         Self {
-            name: &field.index,
+            name: &field.name,
             init: &field.init,
         }
     }
@@ -94,7 +127,7 @@ impl<'a> From<&'a Field> for FieldInit<'a> {
 impl ToTokens for FieldInit<'_> {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         let Self { name, init } = self;
-        tokens.append_all(quote_spanned!(name.span() => #name : #init));
+        tokens.append_all(quote!(#name : #init));
     }
 }
 
@@ -109,8 +142,8 @@ impl<'a> From<&'a Field> for FieldDecl<'a> {
     fn from(field: &'a Field) -> Self {
         Self {
             attrs: &field.attrs,
-            vis: &Visibility::Inherited,
-            name: &field.index,
+            vis: &field.vis,
+            name: &field.name,
             ty: &field.ty,
         }
     }
@@ -135,6 +168,6 @@ impl ToTokens for FieldDecl<'_> {
             name,
             ty,
         } = self;
-        tokens.append_all(quote_spanned!(name.span() => #(#attrs)* #vis #name : #ty));
+        tokens.append_all(quote!(#(#attrs)* #vis #name : #ty));
     }
 }

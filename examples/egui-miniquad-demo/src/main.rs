@@ -28,11 +28,6 @@ impl mq::EventHandler for Stage {
             #[field]
             let ref mut show_egui_demo_windows: bool = true;
 
-            #[field]
-            let Some(ref mut a): Option<()> = Some(()) else {
-                return;
-            };
-
             if *show_egui_demo_windows {
                 #[field]
                 let ref mut egui_demo_windows: egui_demo_lib::DemoWindows =

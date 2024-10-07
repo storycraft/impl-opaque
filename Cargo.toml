@@ -11,6 +11,7 @@ authors = ["storycraft <storycraft@pancake.sh>"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/storycraft/impl-opaque"
 keywords = ["macro", "boilerplate"]
+rust-version = "1.65"
 
 [workspace.dependencies]
 impl-opaque = { version = "0.4.0", path = "./lib" }

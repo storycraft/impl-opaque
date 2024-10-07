@@ -1,5 +1,6 @@
-use std::mem;
+use core::mem;
 
+use alloc::{boxed::Box, vec::Vec};
 use quote::{format_ident, quote_spanned};
 use syn::{
     spanned::Spanned, visit::Visit, visit_mut::VisitMut, Attribute, Block, Expr, Ident, Index,

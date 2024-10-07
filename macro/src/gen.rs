@@ -1,3 +1,4 @@
+use alloc::vec::Vec;
 use quote::{quote, ToTokens, TokenStreamExt};
 use syn::{Attribute, Expr, Generics, Ident, Type, Visibility};
 

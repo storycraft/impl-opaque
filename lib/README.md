@@ -6,7 +6,7 @@ Declare struct fields and initializers in implementation area.
 This macro tries to solve separation of field declarations, initializations and usages.
 The `opaque` attribute generates struct declaration, struct constructor (`new` method) by collecting field declarations and initializers inside impl block.
 
-This crate is no_std.
+This crate is no_std on runtime and requires alloc to build macro.
 
 ## Features
 1. Declare fields inside method

@@ -1,3 +1,4 @@
+use alloc::vec::Vec;
 use core::mem;
 use syn::{
     parse::{Parse, ParseStream},

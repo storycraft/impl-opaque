@@ -63,6 +63,22 @@ impl Iterator for Struct {
 }
 ```
 
+5. Pattern matching and early return for fields inside a method
+```rust no_run
+#[opaque]
+impl Struct {
+    pub fn run(&mut self) {
+        #[field]
+        let ref mut running @ true: bool = true else {
+            return
+        };
+
+        println!("run");
+        *running = false;
+    }
+}
+```
+
 Attribute reference
 ```rust no_run
 #[opaque($(as $vis $(const)? ,)? $($($vis)? $ident: $ty),*)]

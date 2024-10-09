@@ -94,7 +94,7 @@ impl ToTokens for Gen {
                 }
 
                 impl #impl_gen #ty #where_gen {
-                    pub #constness fn new(#constructor) -> Self {
+                    #vis #constness fn new(#constructor) -> Self {
                         Self {
                             #(#field_init_iter,)*
                             #(#constructor_init_iter,)*

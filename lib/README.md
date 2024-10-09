@@ -79,6 +79,9 @@ impl Struct {
 }
 ```
 
+Attributes below `#[opaque]` will be moved to struct declaration.
+Attributes below `#[field]` and `field!()` will be moved to field declaration.
+
 Attribute reference
 ```rust no_run
 #[opaque($(as $vis $(const)? ,)? $($($vis)? $ident: $ty),*)]

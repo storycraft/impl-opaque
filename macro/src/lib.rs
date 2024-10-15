@@ -45,6 +45,10 @@ pub fn opaque(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     TokenStream::from(quote!(
         #gen
-        #block
+
+        const _: () = {
+            use impl_opaque::field;
+            #block
+        };
     ))
 }

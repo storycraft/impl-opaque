@@ -7,4 +7,16 @@ pub use impl_opaque_macro::opaque;
 pub mod __private {
     #[derive(Clone, Copy)]
     pub struct Opaque;
+
+    #[macro_export]
+    #[doc(hidden)]
+    macro_rules! field {
+        ($vis:vis $name:ident : $ty:ty = $expr:expr) => {
+            $crate::field!()
+        };
+
+        () => {
+            compile_error!("cannot use field macro outside of impl block")
+        };
+    }
 }

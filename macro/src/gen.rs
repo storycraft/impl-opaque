@@ -81,10 +81,10 @@ impl ToTokens for Gen {
             #(#struct_attrs)*
             #[repr(Rust)]
             #[non_exhaustive]
-            #vis struct #ty {
+            #vis struct #ty #where_gen {
                 #(#field_decl_iter,)*
                 __internal_no_default_derive: ::impl_opaque::__private::Opaque,
-            } #where_gen
+            }
 
             const _: () = {
                 impl #impl_gen ::core::fmt::Debug for #ty #where_gen {
